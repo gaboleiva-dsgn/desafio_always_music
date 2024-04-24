@@ -21,12 +21,12 @@ const rut = argumentos[2];
 const curso = argumentos[3];
 const nivel = argumentos[4];
 
+// Creamos un nuevo alumno
 const nuevoAlumno =  async ({ nombre, rut, curso, nivel }) => {
 try {
-    console.log(nombre, rut, curso, nivel);
 const res = await pool.query(
     "INSERT INTO alumnos values ($1, $2, $3, $4) RETURNING *",
-    [nombre, rut, curso, nivel]
+[nombre, rut, curso, nivel]
 );
 console.log(`Alumno ${nombre} del ${curso} agregado con éxito`);
     } catch (error) {
@@ -34,9 +34,22 @@ console.log(`Alumno ${nombre} del ${curso} agregado con éxito`);
     }
 }
 
-const getAlumno = async () => {
-    const res = await pool.query("SELECT * FROM alumnos");
-    console.log("Usuarios registrados:", res.rows);
+// Consultamos un alumno por rut
+const consultaRut = async ( rut ) => {
+    try {
+        const res = await pool.query(
+            `SELECT * FROM alumnos WHERE rut = $1`, 
+            [rut]
+        );
+        console.log("Alumno consultado por rut: ", res.rows[0]);
+    } catch (error) {
+        console.log("Mensaje de error: ", error);
+    }
+};
+
+const getAlumnos = async () => {
+    const res = await pool.query(`SELECT * FROM alumnos`);
+    console.log("Alumnos registrados:", res.rows);
   };
 
   // Funcion IIFE que recibe de la linea de comando y llama funciones asincronas internas
@@ -46,12 +59,12 @@ const getAlumno = async () => {
       case 'agregar':
         nuevoAlumno({ nombre, rut, curso, nivel })
         break;
-    //   case 'id':
-    //     consultaId({ id })
-    //     break;
-    //   case 'todos':
-    //     getUsuario()
-    //     break;
+      case 'rut':
+        consultaRut(argumentos[1])
+        break;
+      case 'todos':
+        getAlumnos()
+        break;
       default:
         console.log("Funcion: " + funcion + "no es valida")
         break;
