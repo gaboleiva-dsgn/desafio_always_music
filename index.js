@@ -1,8 +1,8 @@
-const { log } = require("console");
+const { log, error } = require("console");
 const { Pool } = require("pg");
 
 const config = {
-    user: "gaboleiva",
+    user: "gaboleiva1",
     host: "localhost",
     password: "P455p0r7",
     database: "dbalwaysmusic",
@@ -22,6 +22,26 @@ const rut = argumentos[2];
 const curso = argumentos[3];
 const nivel = argumentos[4];
 
+// Función para el manejo de errores generales
+
+const manejoErrores = (error, pool, tabla) => { 
+    console.log("El código de error es: ",error.code);
+    switch (error.code) {
+        case '28000':
+            console.log("autentificacion password falló o no existe usuario: " + pool.options.user);
+            break;
+        case '42P01':
+            console.log("No existe la tabla ["+tabla+"] consultada");
+            break;
+        case '3D000':
+            console.log("Base de Datos ["+pool.options.database+"] no existe");
+            break;
+        default:
+            console.log("Error interno del servidor");
+            break;
+    }
+}
+
 // Función asincrona para crear un nuevo alumno.
 const nuevoAlumno = async ({ nombre, rut, curso, nivel }) => {
     try {
@@ -37,7 +57,7 @@ const nuevoAlumno = async ({ nombre, rut, curso, nivel }) => {
             console.log(`Alumno ${nombre} del curso ${curso} agregado con éxito:`, res.rows[0]);
         }
     } catch (error) {
-        console.log("Mensaje de error: ", error)
+        manejoErrores(error, pool, 'alumnos');
     }
 };
 
@@ -56,8 +76,8 @@ const editarAlumno = async ({ nombre, rut, curso, nivel }) => {
             console.log(`El alumno con ${rut} fue editado con éxito`);
             console.log("El alumno editado: ", res.rows[0]);
         }
-    } catch (error) {
-        console.log("Mensaje de error: ", error)
+    } catch (error) {    
+        manejoErrores(error, pool, 'alumnos');
     }
 }
 // Función asincrona para consultar un alumno pasando como parametro el rut.
@@ -75,7 +95,7 @@ const consultaRut = async (rut) => {
             console.log(`Alumno con rut ${rut}: `, res.rows[0]);
         }
     } catch (error) {
-        console.log("Mensaje de error: ", error);
+        manejoErrores(error, pool, 'alumnos');
     }
 };
 
@@ -85,7 +105,7 @@ const totalAlumnos = async () => {
         const res = await pool.query(`SELECT * FROM alumnos`);
         console.log("Alumnos registrados:", res.rows);
     } catch (error) {
-        console.log("Mensaje de error: ", error)
+        manejoErrores(error, pool, 'alumnos');
     }
 };
 
@@ -106,7 +126,7 @@ const eliminarAlumno = async (rut) => {
             console.log("Alumno eliminado: ", res.rows[0]);
         }
     } catch (error) {
-        console.log("Mensaje de error: ", error)
+        manejoErrores(error, pool, 'alumnos');
     }
 };
 
