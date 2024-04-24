@@ -47,10 +47,19 @@ const consultaRut = async ( rut ) => {
     }
 };
 
-const getAlumnos = async () => {
+const totalAlumnos = async () => {
     const res = await pool.query(`SELECT * FROM alumnos`);
     console.log("Alumnos registrados:", res.rows);
   };
+
+  const eliminarAlumno = async (rut) => {
+    const res = await pool.query(
+      `DELETE FROM alumnos WHERE rut = $1 RETURNING *`,
+      [rut]
+    );
+    console.log(`El alumno se ha eliminado con éxito`);
+    console.log("Alumno eliminado: ", res.rows[0]);
+};
 
   // Funcion IIFE que recibe de la linea de comando y llama funciones asincronas internas
 (async () => {
@@ -63,7 +72,10 @@ const getAlumnos = async () => {
         consultaRut(argumentos[1])
         break;
       case 'todos':
-        getAlumnos()
+        totalAlumnos()
+        break;
+        case 'eliminar':
+        eliminarAlumno(argumentos[1])
         break;
       default:
         console.log("Funcion: " + funcion + "no es valida")
