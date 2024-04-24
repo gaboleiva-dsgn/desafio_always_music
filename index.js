@@ -106,7 +106,7 @@ const eliminarAlumno = async (rut) => {
             console.log("Alumno eliminado: ", res.rows[0]);
         }
     } catch (error) {
-        console.log(`El alumno con ${rut} no existe`);
+        console.log("Mensaje de error: ", error)
     }
 };
 
