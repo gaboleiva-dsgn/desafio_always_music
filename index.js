@@ -41,6 +41,26 @@ else {
     }
 };
 
+// Función asincrona para editar un alumno pasando el rut
+const editarAlumno = async ({ nombre, rut, curso, nivel }) => {
+    try {
+        const res = await pool.query(
+            `UPDATE alumnos SET nombre = $1, rut = $2, curso = $3, nivel = $4 WHERE rut = $2 RETURNING *`, [nombre, rut, curso, nivel]
+        );
+        if (!nombre || !curso || !nivel) {
+            console.log("Debe ingresar los campos nombre, rut, curso y nivel");
+        } else if (res.rows == 0) {
+            console.log(`El Alumno con rut ${rut} no existe`);
+        }
+        else {
+            console.log(`El alumno con ${rut} fue editado con éxito`);
+            console.log("El alumno editado: ", res.rows[0]);
+        }
+    } catch (error) {
+    // manejo general de errores
+    manejoErrores(error, pool, 'estudiantes');
+}
+}
 // Función asincrona para consultar un alumno pasando como parametro el rut.
 const consultaRut = async ( rut ) => {
     try {
@@ -97,6 +117,9 @@ const totalAlumnos = async () => {
     switch (funcion) {
       case 'agregar':
         nuevoAlumno({ nombre, rut, curso, nivel })
+        break;
+      case 'editar':
+        editarAlumno({ nombre, rut, curso, nivel })
         break;
       case 'rut':
         consultaRut(argumentos[1])
