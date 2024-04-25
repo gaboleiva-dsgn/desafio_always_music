@@ -2,7 +2,7 @@ const { log, error } = require("console");
 const { Pool } = require("pg");
 
 const config = {
-    user: "gaboleiva1",
+    user: "gaboleiva",
     host: "localhost",
     password: "P455p0r7",
     database: "dbalwaysmusic",
@@ -22,8 +22,7 @@ const rut = argumentos[2];
 const curso = argumentos[3];
 const nivel = argumentos[4];
 
-// Función para el manejo de errores generales
-
+// Bloque función de manejo de errores
 const manejoErrores = (error, pool, tabla) => { 
     console.log("El código de error es: ",error.code);
     switch (error.code) {
@@ -69,7 +68,7 @@ const editarAlumno = async ({ nombre, rut, curso, nivel }) => {
         );
         if (!nombre || !curso || !nivel) {
             console.log("Debe ingresar los campos nombre, rut, curso y nivel");
-        } else if (res.rows == 0) {
+        } else if (res.rowCount == 0) {
             console.log(`El Alumno con rut ${rut} no existe`);
         }
         else {
@@ -89,7 +88,7 @@ const consultaRut = async (rut) => {
         );
         if (!rut) {
             console.log("Debe ingresar un rut para consultar");
-        } else if (res.rows == 0) {
+        } else if (res.rowCount == 0) {
             console.log(`El rut ${rut} ingresado no existe`);
         } else {
             console.log(`Alumno con rut ${rut}: `, res.rows[0]);
@@ -118,7 +117,7 @@ const eliminarAlumno = async (rut) => {
         );
         if (!rut) {
             console.log("Debe ingresar un rut");
-        } else if (res.rows == 0) {
+        } else if (res.rowCount == 0) {
             console.log(`El alumno con ${rut} no existe`);
         }
         else {
