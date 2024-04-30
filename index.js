@@ -1,10 +1,23 @@
-const { log, error } = require("console");
+// const express = require("express");
+// const app = express();
+// const axios = require("axios");
+// const fs = require("fs");
+// const morgan = require("morgan");
+
 const { Pool } = require("pg");
+
+// app.use(express.json());
+// app.use(morgan("dev"));
+
+const manejoErrores = require("./manejoErrores.js")
+
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => console.log("Servidor iniciado y escuchando en puerto: " + PORT));
 
 const config = {
     user: "gaboleiva",
     host: "localhost",
-    password: "P455p0r7",
+    password: "",
     database: "dbalwaysmusic",
     port: 5432
 };
@@ -22,25 +35,6 @@ const rut = argumentos[2];
 const curso = argumentos[3];
 const nivel = argumentos[4];
 
-// Bloque función de manejo de errores
-const manejoErrores = (error, pool, tabla) => { 
-    console.log("El código de error es: ",error.code);
-    switch (error.code) {
-        case '28000':
-            console.log("autentificacion password falló o no existe usuario: " + pool.options.user);
-            break;
-        case '42P01':
-            console.log("No existe la tabla ["+tabla+"] consultada");
-            break;
-        case '3D000':
-            console.log("Base de Datos ["+pool.options.database+"] no existe");
-            break;
-        default:
-            console.log("Error interno del servidor");
-            break;
-    }
-}
-
 // Función asincrona para crear un nuevo alumno.
 const nuevoAlumno = async ({ nombre, rut, curso, nivel }) => {
     try {
@@ -56,7 +50,9 @@ const nuevoAlumno = async ({ nombre, rut, curso, nivel }) => {
             console.log(`Alumno ${nombre} del curso ${curso} agregado con éxito:`, res.rows[0]);
         }
     } catch (error) {
-        manejoErrores(error, pool, 'alumnos');
+        const { status, message } = manejoErrores(error.code || error);
+        console.log(`Hubo un error: ${message}`);
+        return { status, message };
     }
 };
 
@@ -76,12 +72,15 @@ const editarAlumno = async ({ nombre, rut, curso, nivel }) => {
             console.log("El alumno editado: ", res.rows[0]);
         }
     } catch (error) {    
-        manejoErrores(error, pool, 'alumnos');
+        const { status, message } = manejoErrores(error.code || error);
+    console.log(`Hubo un error: ${message}`);
+    return { status, message };
     }
 }
 // Función asincrona para consultar un alumno pasando como parametro el rut.
 const consultaRut = async (rut) => {
     try {
+        console.log("Valor de rut: ", rut);
         const res = await pool.query(
             "SELECT * FROM alumnos WHERE rut = $1",
             [rut]
@@ -94,7 +93,9 @@ const consultaRut = async (rut) => {
             console.log(`Alumno con rut ${rut}: `, res.rows[0]);
         }
     } catch (error) {
-        manejoErrores(error, pool, 'alumnos');
+        const { status, message } = manejoErrores(error.code || error);
+    console.log(`Hubo un error: ${message}`);
+    return { status, message };
     }
 };
 
@@ -104,12 +105,14 @@ const totalAlumnos = async () => {
         const res = await pool.query(`SELECT * FROM alumnos`);
         console.log("Alumnos registrados:", res.rows);
     } catch (error) {
-        manejoErrores(error, pool, 'alumnos');
+        const { status, message } = manejoErrores(error.code || error);
+    console.log(`Hubo un error: ${message}`);
+    return { status, message };
     }
 };
 
 // Función asincrona para eliminar Alumno pasandole como parametro el rut 
-const eliminarAlumno = async (rut) => {
+const eliminarAlumno = async ({rut}) => {
     try {
         const res = await pool.query(
             `DELETE FROM alumnos WHERE rut = $1 RETURNING *`,
@@ -125,7 +128,11 @@ const eliminarAlumno = async (rut) => {
             console.log("Alumno eliminado: ", res.rows[0]);
         }
     } catch (error) {
-        manejoErrores(error, pool, 'alumnos');
+        // manejoErrores(error, pool, 'alumnos');
+
+        const { status, message } = manejoErrores(error.code || error);
+    console.log(`Hubo un error: ${message}`);
+    return { status, message };
     }
 };
 
@@ -139,8 +146,9 @@ const eliminarAlumno = async (rut) => {
         case 'editar':
             editarAlumno({ nombre, rut, curso, nivel })
             break;
-        case 'rut':
-            consultaRut(argumentos[1])
+            case 'rut':
+            console.log("VAlor de rut: ", rut);
+            consultaRut(rut)
             break;
         case 'todos':
             totalAlumnos()
